@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Product, Category } from '../../types';
 import { 
   Plus, Trash2, Edit2, Package, Search, ImageIcon, 
-  Zap, ToggleLeft, ToggleRight, X, Camera, Link as LinkIcon, Shield, LayoutGrid, CheckCircle2, RefreshCw, AlertCircle
+  Zap, ToggleLeft, ToggleRight, X, Camera, Link as LinkIcon, Shield, LayoutGrid, CheckCircle2, RefreshCw, Globe, Lock, User as UserIcon, Terminal
 } from 'lucide-react';
 
 interface AdminProductsProps {
@@ -16,6 +16,7 @@ interface AdminProductsProps {
 const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, setProducts, deleteProduct }) => {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showPortal, setShowPortal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
@@ -36,14 +37,14 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
 
   const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
-  const handleTestConnection = () => {
-    if (!formData.automationUser || !formData.automationPass) return alert("يرجى إدخال بيانات الدخول للاختبار");
-    setTestStatus('testing');
-    // محاكاة عملية الربط الذكي
-    setTimeout(() => {
-      setTestStatus('success');
-      setTimeout(() => setTestStatus('idle'), 3000);
-    }, 2500);
+  // دالة التبديل المحسنة لضمان العمل 100%
+  const handleToggleAuto = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFormData(prev => ({ 
+      ...prev, 
+      isAutomatic: !prev.isAutomatic 
+    }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,6 +60,21 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
     setEditingId(product.id.toString());
     setFormData({ ...product });
     setShowModal(true);
+  };
+
+  const handleSavePortalData = () => {
+    if (!formData.automationUser || !formData.automationPass) {
+      alert("يرجى إكمال بيانات الدخول للسيستم أولاً");
+      return;
+    }
+    setTestStatus('testing');
+    setTimeout(() => {
+      setTestStatus('success');
+      setTimeout(() => {
+        setShowPortal(false);
+        setTestStatus('idle');
+      }, 1000);
+    }, 1500);
   };
 
   const handleSave = async () => {
@@ -156,11 +172,10 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
              
              <div className="flex items-center justify-between border-b border-slate-50 pb-4">
                <button onClick={() => setShowModal(false)} className="p-2 bg-slate-50 rounded-xl text-slate-400"><X size={20}/></button>
-               <h3 className="text-xl font-black text-slate-900 text-right">إعدادات الروبوت والمنتج</h3>
+               <h3 className="text-xl font-black text-slate-900 text-right">إدارة المنتج والروبوت</h3>
              </div>
 
              <div className="space-y-4">
-                {/* رفع الصورة */}
                 <div className="flex flex-col items-center gap-4">
                    <div className="w-32 h-32 bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group">
                       {formData.image ? (
@@ -173,41 +188,25 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
                          <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                       </label>
                    </div>
-                   <p className="text-[10px] font-black text-slate-400 uppercase">ارفع صورة المنتج هنا</p>
+                   <p className="text-[10px] font-black text-slate-400 uppercase">صورة المنتج</p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                   <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-400 mr-4 uppercase text-right block">اسم المنتج</label>
-                      <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full h-12 bg-slate-50 rounded-2xl px-6 text-right font-black outline-none border border-slate-100 focus:border-rose-500" />
-                   </div>
-                   <div className="space-y-1">
-                      <label className="text-[10px] font-black text-slate-400 mr-4 uppercase text-right block">تحديد القسم</label>
-                      <select 
-                        value={formData.categoryId}
-                        onChange={e => setFormData({...formData, categoryId: parseInt(e.target.value)})}
-                        className="w-full h-12 bg-slate-50 rounded-2xl px-6 text-right font-black outline-none border border-slate-100 focus:border-rose-500 appearance-none"
-                      >
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-                      </select>
-                   </div>
-                </div>
-                
                 {/* قسم الأتمتة والربط الذكي */}
                 <div className="bg-slate-900 rounded-[2.5rem] p-6 space-y-5 shadow-2xl border border-white/5 relative overflow-hidden">
-                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl" />
+                   <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
                    
                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
                       <div className="flex items-center gap-3">
                          <button 
-                            onClick={() => setFormData({...formData, isAutomatic: !formData.isAutomatic})}
-                            className="transition-all active:scale-90"
+                            type="button"
+                            onClick={handleToggleAuto}
+                            className="transition-all active:scale-95 p-1 rounded-xl"
                          >
-                            {formData.isAutomatic ? <ToggleRight className="text-emerald-400" size={40}/> : <ToggleLeft className="text-white/20" size={40}/>}
+                            {formData.isAutomatic ? <ToggleRight className="text-emerald-400" size={44}/> : <ToggleLeft className="text-white/20" size={44}/>}
                          </button>
                          <div className="text-right">
                            <span className="block text-[11px] font-black text-white uppercase tracking-wider">نظام الشحن التلقائي</span>
-                           <span className="text-[9px] text-emerald-400 font-bold">Smart Jentel Bot Active</span>
+                           <span className="text-[9px] text-emerald-400 font-bold">JENTEL-BOT 2.0 Automation</span>
                          </div>
                       </div>
                       <Shield size={22} className="text-emerald-500" />
@@ -216,7 +215,7 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
                    {formData.isAutomatic && (
                      <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
                         <div className="relative">
-                           <label className="text-[9px] font-black text-white/40 mr-2 mb-1 block">رابط السيستم الخارجي (Cocco/Charge)</label>
+                           <label className="text-[9px] font-black text-white/40 mr-2 mb-1 block">رابط السيستم الخارجي (URL)</label>
                            <input 
                              type="text" 
                              placeholder="https://..." 
@@ -227,43 +226,22 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
                            <LinkIcon size={14} className="absolute left-3 top-9 text-white/30" />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                           <div className="space-y-1">
-                              <label className="text-[9px] font-black text-white/40 mr-2 block">اسم المستخدم</label>
-                              <input 
-                                type="text" 
-                                placeholder="User / Email" 
-                                value={formData.automationUser}
-                                onChange={e => setFormData({...formData, automationUser: e.target.value})}
-                                className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-center text-xs text-white font-bold outline-none focus:border-emerald-500/50" 
-                              />
-                           </div>
-                           <div className="space-y-1">
-                              <label className="text-[9px] font-black text-white/40 mr-2 block">كلمة السر</label>
-                              <input 
-                                type="password" 
-                                placeholder="Password" 
-                                value={formData.automationPass}
-                                onChange={e => setFormData({...formData, automationPass: e.target.value})}
-                                className="w-full h-11 bg-white/5 border border-white/10 rounded-xl px-4 text-center text-xs text-white font-bold outline-none focus:border-emerald-500/50" 
-                              />
-                           </div>
+                        <div className="bg-emerald-500/10 p-5 rounded-3xl border border-emerald-500/20 text-center space-y-4">
+                           <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">تحكم السيستم والمهام</p>
+                           <button 
+                             type="button"
+                             onClick={() => setShowPortal(true)}
+                             className="w-full h-12 bg-emerald-500 text-white rounded-xl font-black text-[11px] flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                           >
+                             <Globe size={16}/> الدخول للسيستم وربط الحساب
+                           </button>
+                           {formData.automationUser && (
+                             <div className="flex items-center justify-center gap-2 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                               <CheckCircle2 size={12} className="text-emerald-400"/>
+                               <span className="text-[9px] font-bold text-white/80">مربوط بحساب: {formData.automationUser}</span>
+                             </div>
+                           )}
                         </div>
-
-                        {/* زر اختبار الاتصال */}
-                        <button 
-                          onClick={handleTestConnection}
-                          disabled={testStatus === 'testing'}
-                          className={`w-full h-12 rounded-xl font-black text-[11px] flex items-center justify-center gap-2 transition-all ${
-                            testStatus === 'success' ? 'bg-emerald-500 text-white' : 
-                            testStatus === 'error' ? 'bg-rose-500 text-white' : 
-                            'bg-white/10 text-white hover:bg-white/20'
-                          }`}
-                        >
-                          {testStatus === 'testing' ? <RefreshCw className="animate-spin" size={16}/> : 
-                           testStatus === 'success' ? <><CheckCircle2 size={16}/> تم الربط والتحقق بنجاح</> :
-                           <><RefreshCw size={16}/> اختبار اتصال الروبوت الآن</>}
-                        </button>
                      </div>
                    )}
                 </div>
@@ -281,9 +259,72 @@ const AdminProducts: React.FC<AdminProductsProps> = ({ products, categories, set
              </div>
 
              <button onClick={handleSave} disabled={isSubmitting} className="w-full h-16 bg-rose-500 text-white rounded-[2rem] font-black text-lg shadow-xl shadow-rose-500/30 active:scale-95 transition-all flex items-center justify-center gap-3">
-                {isSubmitting ? "جاري تفعيل المنتج..." : "حفظ ونشر المنتج"}
+                {isSubmitting ? "جاري الحفظ..." : "حفظ المنتج وتفعيل الروبوت"}
              </button>
           </div>
+        </div>
+      )}
+
+      {/* بوابة تسجيل الدخول (Portal Simulation) */}
+      {showPortal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+           <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-xl" onClick={() => setShowPortal(false)} />
+           <div className="relative w-full max-w-sm bg-white rounded-[3rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+              
+              <div className="bg-slate-900 p-4 flex items-center justify-between border-b border-white/5">
+                 <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-lg shadow-rose-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-lg shadow-amber-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50" />
+                 </div>
+                 <span className="text-[9px] font-mono text-emerald-400 font-bold truncate max-w-[150px]">{formData.automationUrl}</span>
+              </div>
+
+              <div className="p-8 space-y-6">
+                 <div className="text-center space-y-2">
+                    <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                       <Terminal size={32} className="text-emerald-500" />
+                    </div>
+                    <h4 className="text-lg font-black text-slate-800 tracking-tight">بوابة ربط الروبوت</h4>
+                    <p className="text-[10px] font-bold text-slate-400 px-6 leading-relaxed">أدخل بيانات دخولك للرابط أعلاه. سيقوم الروبوت بحفظها للدخول التلقائي عند كل طلب.</p>
+                 </div>
+
+                 <div className="space-y-4">
+                    <div className="relative">
+                       <input 
+                         type="text" 
+                         placeholder="اسم المستخدم في السيستم" 
+                         value={formData.automationUser}
+                         onChange={e => setFormData({...formData, automationUser: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-12 text-center font-black text-slate-700 outline-none focus:border-emerald-500"
+                       />
+                       <UserIcon size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    </div>
+                    <div className="relative">
+                       <input 
+                         type="password" 
+                         placeholder="كلمة المرور في السيستم" 
+                         value={formData.automationPass}
+                         onChange={e => setFormData({...formData, automationPass: e.target.value})}
+                         className="w-full h-14 bg-slate-50 border border-slate-100 rounded-2xl px-12 text-center font-black text-slate-700 outline-none focus:border-emerald-500"
+                       />
+                       <Lock size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                    </div>
+                 </div>
+
+                 <button 
+                   onClick={handleSavePortalData}
+                   disabled={testStatus === 'testing'}
+                   className={`w-full h-16 rounded-2xl font-black text-sm shadow-xl flex items-center justify-center gap-3 transition-all ${
+                     testStatus === 'success' ? 'bg-emerald-500 text-white' : 'bg-slate-900 text-white active:scale-95'
+                   }`}
+                 >
+                    {testStatus === 'testing' ? <RefreshCw className="animate-spin" size={20}/> : 
+                     testStatus === 'success' ? <><CheckCircle2 size={20}/> تم الحفظ والربط</> : 
+                     <><Zap size={20}/> حفظ وإتمام الربط</>}
+                 </button>
+              </div>
+           </div>
         </div>
       )}
     </div>
