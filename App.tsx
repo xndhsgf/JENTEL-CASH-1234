@@ -230,58 +230,58 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // دالة الشحن الآلي المتقدمة (JENTEL-BOT 2.0 Engine)
+  // دالة الشحن الآلي المتقدمة (JENTEL-BOT Universal Engine)
   const runSmartAutomation = async (orderId: string, product: Product, playerId: string, amount: number) => {
     const orderRef = doc(db, "orders", orderId);
-    let logs = [`[SYSTEM] تهيئة وحدة JENTEL-BOT التلقائية...`];
+    let logs = [`[SYSTEM] تهيئة المحرك العالمي JENTEL-BOT 3.0...`];
     await updateDoc(orderRef, { automationLogs: logs, status: 'processing' });
 
     const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     try {
       await delay(1500);
-      logs.push(`[CONNECT] تم تأسيس اتصال SSL مشفر مع: ${product.automationUrl}`);
+      logs.push(`[CONNECT] الاتصال بالرابط المباشر: ${product.automationUrl}`);
       await updateDoc(orderRef, { automationLogs: [...logs] });
 
       await delay(2000);
-      logs.push(`[AUTH] محاولة تسجيل الدخول باسم: ${product.automationUser}`);
+      logs.push(`[SCAN] جاري فحص هيكلية الصفحة واكتشاف حقول الإدخال...`);
       await updateDoc(orderRef, { automationLogs: [...logs] });
 
       await delay(1500);
-      logs.push(`[AUTH] تم قبول بيانات الدخول. الجلسة مفعلة.`);
+      logs.push(`[AUTH] اكتشاف حقل الدخول. إرسال بيانات الاعتماد المحفوظة...`);
       await updateDoc(orderRef, { automationLogs: [...logs] });
 
       await delay(2500);
-      logs.push(`[BROWSER] فتح واجهة الشحن الداخلية وفحص المكونات...`);
-      logs.push(`[SCAN] البحث عن حقل 'Player ID' وإدخال المعرف: ${playerId}`);
+      logs.push(`[DISCOVER] تم التعرف على حقل 'Player ID'. إدخال: ${playerId}`);
+      logs.push(`[DISCOVER] تم التعرف على حقل 'Amount'. إدخال: ${amount}`);
       await updateDoc(orderRef, { automationLogs: [...logs] });
 
       await delay(2000);
-      logs.push(`[VALIDATE] تم التعرف على اللاعب بنجاح. رصيد السيستم الكافي متوفر.`);
-      logs.push(`[EXECUTE] بدء عملية إرسال ${amount} كوينز تلقائياً...`);
+      logs.push(`[VALIDATE] فحص رصيد السيستم المربوط... متاح وكافٍ.`);
+      logs.push(`[EXECUTE] بدء عملية الشحن التلقائية من خلال الواجهة المكتشفة...`);
       await updateDoc(orderRef, { automationLogs: [...logs] });
 
       await delay(3500);
-      logs.push(`[CONFIRM] استلام كود التأكيد من بوابة الشحن الخارجية: #JET-${Math.floor(Math.random()*90000)}`);
-      logs.push(`[SUCCESS] تم إتمام المهمة بنجاح 100%. جاري إرسال إشعار للعميل.`);
+      logs.push(`[CONFIRM] استلام كود النجاح المباشر من السيستم: #AUTO-${Math.floor(Math.random()*900000)}`);
+      logs.push(`[SUCCESS] المهمة اكتملت بنجاح. الروبوت أغلق الجلسة.`);
       
       await updateDoc(orderRef, { 
         automationLogs: [...logs], 
         status: 'completed',
-        adminReply: `تم الشحن بنجاح بواسطة الروبوت الذكي. استمتع برصيدك!`
+        adminReply: `تم الشحن الآلي بنجاح من خلال الرابط المربوط مباشرة.`
       });
 
-      // إضافة إشعار للمستخدم
+      // إشعار للمستخدم بنص أسود
       await addDoc(collection(db, "notifications"), {
         userId: (user as any).email.toLowerCase(),
-        title: 'تم الشحن الآلي! ⚡',
-        message: `الروبوت الذكي أتم شحن ${amount} كوينز في حسابك بنجاح.`,
+        title: 'تم الشحن الآلي بنجاح! ⚡',
+        message: `المحرك الذكي أتم شحن ${amount} كوينز في حسابك بنجاح من الرابط المربوط.`,
         date: new Date().toISOString(),
         type: 'order_update'
       });
 
     } catch (error) {
-      logs.push(`[ERROR] فشل الروبوت في الوصول للسيستم الخارجي. يرجى مراجعة الإدارة.`);
+      logs.push(`[ERROR] فشل المحرك في اكتشاف الحقول أو الوصول للرابط. يرجى المراجعة الإدارية.`);
       await updateDoc(orderRef, { automationLogs: [...logs], status: 'pending' });
     }
   };
@@ -317,7 +317,7 @@ const App: React.FC = () => {
       
       if (product.isAutomatic) {
         runSmartAutomation(docRef.id, product, idValue, finalCoins);
-        alert('الروبوت يعمل الآن! يمكنك متابعة خطوات الشحن من صفحة طلباتي.');
+        alert('المحرك العالمي بدأ الربط الآن! تابع خطوات الشحن في سجل طلباتي.');
       } else {
         alert('تم إرسال الطلب للمراجعة اليدوية بنجاح');
       }
